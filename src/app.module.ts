@@ -8,4 +8,4 @@ import { DBModule } from './db/db.config';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
