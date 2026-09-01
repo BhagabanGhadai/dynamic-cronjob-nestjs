@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { CronModule } from "./crons/cron.module";
+import { TaskModule } from "./tasks/task.module";
 
 @Module({
-    imports: [CronModule],
+    imports: [TaskModule],
 })
 
 export class DomainModule { }

@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { ECurrentStatus, ETimeZone } from "./cron.interface";
+import { ECurrentStatus, ETimeZone } from "./task.interface";
 
 @Schema({ timestamps: true })
-export class Cron {
+export class Task {
     @Prop({ type: String })
     name: string;
 
@@ -23,5 +23,5 @@ export class Cron {
     status: ECurrentStatus;
 }
 
-export type CronDocument = HydratedDocument<Cron>;
-export const CronSchema = SchemaFactory.createForClass(Cron);
+export type TaskDocument = HydratedDocument<Task>;
+export const TaskSchema = SchemaFactory.createForClass(Task);

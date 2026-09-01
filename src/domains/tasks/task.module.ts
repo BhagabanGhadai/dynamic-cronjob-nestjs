@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
-import { CronController } from "./cron.controller";
+import { TaskController } from "./task.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 
 @Module({
     imports: [MongooseModule.forFeature([])],
-    controllers: [CronController],
+    controllers: [TaskController],
     providers: [],
     exports: []
 })
 
-export class CronModule { }
+export class TaskModule { }
