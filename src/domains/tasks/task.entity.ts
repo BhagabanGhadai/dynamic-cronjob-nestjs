@@ -4,10 +4,10 @@ import { ECurrentStatus, ETaskType, ETimeZone } from "./task.interface";
 
 @Schema({ timestamps: true })
 export class Task {
-    @Prop({ type: String })
+    @Prop({ type: String, required: true, trim: true })
     name: string;
 
-    @Prop({ type: String, enum: ETaskType, default: ETaskType.cron })
+    @Prop({ type: String, required: true, enum: ETaskType, default: ETaskType.cron })
     taskType: ETaskType;
 
     @Prop({ type: String, enum: ETimeZone, default: ETimeZone.IN })
