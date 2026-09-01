@@ -5,7 +5,9 @@ export enum ECurrentStatus {
 }
 
 export enum ETaskType {
-
+    cron = 'cron',
+    interval = 'interval',
+    timeout = 'timeout'
 }
 
 export enum ETimeZone {
