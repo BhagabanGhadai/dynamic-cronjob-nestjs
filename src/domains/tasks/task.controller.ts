@@ -16,8 +16,10 @@ import {
     createTaskSchema,
     updateTaskSchema,
     idSchema,
+    getAllTaskSchema,
     type CreateTaskDto,
     type UpdateTaskDto,
+    type GetAllTaskSchema,
 } from './task.schema';
 
 @Controller('tasks')
@@ -25,12 +27,11 @@ export class TaskController {
     constructor(private readonly taskService: TaskService) { }
 
     @Get()
+    @UsePipes(new ZodValidationPipe(getAllTaskSchema))
     async findAll(
-        @Query('page') page?: number,
-        @Query('limit') limit?: number,
-        @Query('search') search?: string,
+        @Body() body: GetAllTaskSchema
     ): Promise<{ data: TaskDocument[]; total: number }> {
-        return this.taskService.findAll({ page, limit, search });
+        return this.taskService.findAll(body);
     }
 
     @Get(':_id')

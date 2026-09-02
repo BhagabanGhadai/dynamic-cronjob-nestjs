@@ -51,6 +51,13 @@ export const idSchema = z.object({
     _id: z.string().refine(isValidObjectId, "Invalid ObjectId").transform((id) => new Types.ObjectId(id)),
 });
 
+export const getAllTaskSchema = z.object({
+    page: z.optional(z.number().positive("Page must be a positive number")),
+    limit: z.optional(z.number().positive("Limit must be a positive number")),
+    search: z.optional(z.string()),
+});
+
 export type CreateTaskDto = z.infer<typeof createTaskSchema>;
 export type UpdateTaskDto = z.infer<typeof updateTaskSchema>;
 export type IdSchema = z.infer<typeof idSchema>;
+export type GetAllTaskSchema = z.infer<typeof getAllTaskSchema>;
