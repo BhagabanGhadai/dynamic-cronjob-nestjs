@@ -22,10 +22,14 @@ export class TaskHelper {
     ) { }
 
     scheduleTask(task: TaskDocument) {
-        const fetchTask = this.loadTask(task);
-        if (!fetchTask) {
-            throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
+        if (
+            task.status === ECurrentStatus.inactive ||
+            task.status === ECurrentStatus.delete
+        ) {
+            this.stopTask(task);
+            return;
         }
+
         if (task.taskType === ETaskType.cron) {
             return this.startCronJob(task);
         }
@@ -38,45 +42,64 @@ export class TaskHelper {
     }
 
     loadTask(task: TaskDocument): CronJob | NodeJS.Timeout | undefined {
-        if (
-            task.status === ECurrentStatus.inactive ||
-            task.status === ECurrentStatus.delete
-        ) {
-            throw new HttpException('Task is not active', HttpStatus.BAD_REQUEST);
-        }
-
         if (task.taskType === ETaskType.cron) {
-            return this.schedulerRegistry.getCronJob(task.name);
+            return this.schedulerRegistry.doesExist('cron', task.name)
+                ? this.schedulerRegistry.getCronJob(task.name)
+                : undefined;
         }
         if (task.taskType === ETaskType.interval) {
-            return this.schedulerRegistry.getInterval(task.name) as NodeJS.Timeout;
+            return this.schedulerRegistry.doesExist('interval', task.name)
+                ? (this.schedulerRegistry.getInterval(task.name) as NodeJS.Timeout)
+                : undefined;
         }
         if (task.taskType === ETaskType.timeout) {
-            return this.schedulerRegistry.getTimeout(task.name) as NodeJS.Timeout;
+            return this.schedulerRegistry.doesExist('timeout', task.name)
+                ? (this.schedulerRegistry.getTimeout(task.name) as NodeJS.Timeout)
+                : undefined;
         }
     }
 
     stopTask(task: TaskDocument) {
-        this.loadTask(task);
-        if (task.taskType === ETaskType.timeout) {
-            this.schedulerRegistry.deleteTimeout(task.name);
+        if (task.taskType === ETaskType.cron) {
+            if (this.schedulerRegistry.doesExist('cron', task.name)) {
+                const job = this.schedulerRegistry.getCronJob(task.name);
+                job.stop();
+                this.schedulerRegistry.deleteCronJob(task.name);
+                this.logger.log(`Cron job "${task.name}" stopped and removed.`);
+            }
             return;
         }
         if (task.taskType === ETaskType.interval) {
-            this.schedulerRegistry.deleteInterval(task.name);
+            if (this.schedulerRegistry.doesExist('interval', task.name)) {
+                const interval = this.schedulerRegistry.getInterval(task.name);
+                clearInterval(interval);
+                this.schedulerRegistry.deleteInterval(task.name);
+                this.logger.log(`Interval job "${task.name}" stopped and removed.`);
+            }
             return;
         }
-        if (task.taskType === ETaskType.cron) {
-            this.schedulerRegistry.deleteCronJob(task.name);
+        if (task.taskType === ETaskType.timeout) {
+            if (this.schedulerRegistry.doesExist('timeout', task.name)) {
+                const timeout = this.schedulerRegistry.getTimeout(task.name);
+                clearTimeout(timeout);
+                this.schedulerRegistry.deleteTimeout(task.name);
+                this.logger.log(`Timeout job "${task.name}" stopped and removed.`);
+            }
             return;
         }
     }
 
     startCronJob(task: TaskDocument) {
+        if (this.schedulerRegistry.doesExist('cron', task.name)) {
+            const existingJob = this.schedulerRegistry.getCronJob(task.name);
+            existingJob.stop();
+            this.schedulerRegistry.deleteCronJob(task.name);
+        }
+
         const newJob = new CronJob(
             task.cronExpression,
             () => {
-                console.log('Cron job started', task.message);
+                this.logger.log(`[Cron] ${task.name}: ${task.message}`);
             },
             null,
             true,
@@ -84,22 +107,48 @@ export class TaskHelper {
         );
 
         this.schedulerRegistry.addCronJob(task.name, newJob);
+        this.logger.log(
+            `Cron job "${task.name}" scheduled with expression: ${task.cronExpression}`,
+        );
         return;
     }
 
     startIntervalJob(task: TaskDocument) {
+        if (this.schedulerRegistry.doesExist('interval', task.name)) {
+            const existingInterval = this.schedulerRegistry.getInterval(task.name);
+            clearInterval(existingInterval);
+            this.schedulerRegistry.deleteInterval(task.name);
+        }
+
         const interval = setInterval(() => {
-            this.logger.log(task.message);
+            this.logger.log(`[Interval] ${task.name}: ${task.message}`);
         }, task.intervalInMs);
+
         this.schedulerRegistry.addInterval(task.name, interval);
+        this.logger.log(
+            `Interval job "${task.name}" scheduled every ${task.intervalInMs}ms`,
+        );
         return;
     }
 
     startTimeoutJob(task: TaskDocument) {
+        if (this.schedulerRegistry.doesExist('timeout', task.name)) {
+            const existingTimeout = this.schedulerRegistry.getTimeout(task.name);
+            clearTimeout(existingTimeout);
+            this.schedulerRegistry.deleteTimeout(task.name);
+        }
+
         const timeout = setTimeout(() => {
-            this.logger.log(task.message);
+            this.logger.log(`[Timeout] ${task.name}: ${task.message}`);
+            if (this.schedulerRegistry.doesExist('timeout', task.name)) {
+                this.schedulerRegistry.deleteTimeout(task.name);
+            }
         }, task.timeoutInMs);
+
         this.schedulerRegistry.addTimeout(task.name, timeout);
+        this.logger.log(
+            `Timeout job "${task.name}" scheduled to run in ${task.timeoutInMs}ms`,
+        );
         return;
     }
 }
