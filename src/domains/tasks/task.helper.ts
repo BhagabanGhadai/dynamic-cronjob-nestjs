@@ -25,6 +25,15 @@ export class TaskHelper {
         if (!fetchTask) {
             throw new HttpException('Task not found', HttpStatus.NOT_FOUND);
         }
+        if (task.taskType === ETaskType.cron) {
+            return this.startCronJob(task);
+        }
+        if (task.taskType === ETaskType.interval) {
+            return this.startIntervalJob(task);
+        }
+        if (task.taskType === ETaskType.timeout) {
+            return this.startTimeoutJob(task);
+        }
     }
 
     loadTask(task: TaskDocument): CronJob | NodeJS.Timeout | undefined {
