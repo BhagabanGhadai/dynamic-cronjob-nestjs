@@ -20,6 +20,7 @@ export class TaskHelper {
     constructor(
         private readonly schedulerRegistry: SchedulerRegistry,
     ) { }
+
     scheduleTask(task: TaskDocument) {
         const fetchTask = this.loadTask(task);
         if (!fetchTask) {
