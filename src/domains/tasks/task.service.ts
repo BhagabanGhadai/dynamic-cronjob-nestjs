@@ -49,6 +49,7 @@ export class TaskService {
     if (!deleted) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
+    this.taskHelper.stopTask(deleted);
     return deleted;
   }
 }
