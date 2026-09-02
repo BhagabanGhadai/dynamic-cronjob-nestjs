@@ -107,6 +107,7 @@ export class TaskHelper {
         );
 
         this.schedulerRegistry.addCronJob(task.name, newJob);
+        newJob.start();
         this.logger.log(
             `Cron job "${task.name}" scheduled with expression: ${task.cronExpression}`,
         );
