@@ -7,9 +7,12 @@ import {
     Delete,
     Put,
     Query,
+    UsePipes,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { Task, TaskDocument } from './task.entity';
+import { ZodValidationPipe } from 'src/core/pipes/validation.pipe';
+import * as taskSchema from './task.schema';
 
 @Controller('tasks')
 export class TaskController {
@@ -30,7 +33,8 @@ export class TaskController {
     }
 
     @Post()
-    async create(@Body() task: Task): Promise<TaskDocument> {
+    @UsePipes(new ZodValidationPipe<taskSchema.CreateTaskDto>(taskSchema.createTaskSchema))
+    async create(@Body() task: taskSchema.CreateTaskDto): Promise<TaskDocument> {
         return this.taskService.create(task);
     }
 
