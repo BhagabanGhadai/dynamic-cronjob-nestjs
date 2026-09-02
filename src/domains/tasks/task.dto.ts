@@ -43,7 +43,8 @@ export class CreateTaskSwaggerDto {
   intervalInMs?: number;
 
   @ApiPropertyOptional({
-    description: 'Timeout delay in milliseconds (required if taskType is timeout)',
+    description:
+      'Timeout delay in milliseconds (required if taskType is timeout)',
     example: 10000,
   })
   timeoutInMs?: number;

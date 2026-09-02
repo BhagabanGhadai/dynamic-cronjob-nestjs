@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { Task, TaskDocument } from './task.entity';
 import { TaskHelper } from './task.helper';
@@ -12,7 +17,7 @@ export class TaskService implements OnApplicationBootstrap {
   constructor(
     private readonly taskRepository: TaskRepository,
     private taskHelper: TaskHelper,
-  ) { }
+  ) {}
 
   async onApplicationBootstrap() {
     await this.reInstantiateTasks();
@@ -20,14 +25,21 @@ export class TaskService implements OnApplicationBootstrap {
 
   async reInstantiateTasks(): Promise<void> {
     try {
-      this.logger.log('ReInstantiating active tasks on application bootstrap...');
+      this.logger.log(
+        'ReInstantiating active tasks on application bootstrap...',
+      );
       const activeTasks = await this.taskRepository.findActiveTasks();
       for (const task of activeTasks) {
         try {
           this.taskHelper.scheduleTask(task);
-          this.logger.log(`ReInstantiated task: "${task.name}" (${task.taskType})`);
+          this.logger.log(
+            `ReInstantiated task: "${task.name}" (${task.taskType})`,
+          );
         } catch (error) {
-          this.logger.error(`Failed to reInstantiate task "${task.name}":`, error);
+          this.logger.error(
+            `Failed to reInstantiate task "${task.name}":`,
+            error,
+          );
         }
       }
       this.logger.log(`ReInstantiated ${activeTasks.length} active task(s).`);

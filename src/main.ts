@@ -7,7 +7,8 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './core/filters/global.filters';
-import compression from 'compression';
+import compression from '@fastify/compress';
+import helmet from '@fastify/helmet';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -18,7 +19,9 @@ async function bootstrap() {
       abortOnError: false,
     },
   );
-  app.use(compression());
+  app.enableCors();
+  await app.register(compression);
+  await app.register(helmet);
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   const config = new DocumentBuilder()
@@ -36,6 +39,8 @@ async function bootstrap() {
   const port = process.env.PORT ?? 8080;
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}`);
-  logger.log(`Swagger documentation available at: http://localhost:${port}/docs`);
+  logger.log(
+    `Swagger documentation available at: http://localhost:${port}/docs`,
+  );
 }
 void bootstrap();

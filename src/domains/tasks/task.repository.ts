@@ -9,7 +9,7 @@ import { UpdateTaskDto } from './task.schema';
 export class TaskRepository {
   constructor(
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
-  ) { }
+  ) {}
 
   async findById(id: string): Promise<TaskDocument | null> {
     return this.taskModel.findById(id).exec();
@@ -58,7 +58,9 @@ export class TaskRepository {
   }
 
   async update(data: Partial<UpdateTaskDto>): Promise<TaskDocument | null> {
-    return this.taskModel.findByIdAndUpdate(data._id, data, { new: true }).exec();
+    return this.taskModel
+      .findByIdAndUpdate(data._id, data, { new: true })
+      .exec();
   }
 
   async softDelete(id: string): Promise<TaskDocument | null> {
