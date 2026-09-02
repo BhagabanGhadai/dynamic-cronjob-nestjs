@@ -4,9 +4,12 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './core/filters/global.filters';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
@@ -14,7 +17,23 @@ async function bootstrap() {
       abortOnError: false,
     },
   );
-  app.useGlobalFilters(new GlobalExceptionFilter())
-  await app.listen(process.env.PORT ?? 8080);
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  const config = new DocumentBuilder()
+    .setTitle('Dynamic Cronjobs API')
+    .setDescription(
+      'API documentation for dynamic cron, interval, and timeout task scheduling in NestJS',
+    )
+    .setVersion('1.0')
+    .addTag('tasks', 'Dynamic task management endpoints')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('docs', app, document);
+
+  const port = process.env.PORT ?? 8080;
+  await app.listen(port);
+  logger.log(`Application is running on: http://localhost:${port}`);
+  logger.log(`Swagger documentation available at: http://localhost:${port}/docs`);
 }
 void bootstrap();
