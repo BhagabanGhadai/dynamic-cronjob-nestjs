@@ -1,46 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { Task, TaskDocument } from './task.entity';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { TaskHelper } from './task.helper';
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly taskRepository: TaskRepository) {}
+    constructor(
+        private readonly taskRepository: TaskRepository,
+        private taskHelper: TaskHelper,
+    ) { }
 
-  async findById(id: string): Promise<TaskDocument> {
-    const task = await this.taskRepository.findById(id);
-    if (!task) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
+    async findById(id: string): Promise<TaskDocument> {
+        const task = await this.taskRepository.findById(id);
+        if (!task) {
+            throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        return task;
     }
-    return task;
-  }
 
-  async findAll(
-    params: { page?: number; limit?: number; search?: string } = {},
-  ): Promise<{ data: TaskDocument[]; total: number }> {
-    return this.taskRepository.findAllPaginated(params);
-  }
-
-  async findActiveTasks(): Promise<TaskDocument[]> {
-    return this.taskRepository.findActiveTasks();
-  }
-
-  async create(data: Partial<Task>): Promise<TaskDocument> {
-    return this.taskRepository.create(data);
-  }
-
-  async update(id: string, data: Partial<Task>): Promise<TaskDocument> {
-    const updated = await this.taskRepository.update(id, data);
-    if (!updated) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
+    async findAll(
+        params: { page?: number; limit?: number; search?: string } = {},
+    ): Promise<{ data: TaskDocument[]; total: number }> {
+        return this.taskRepository.findAllPaginated(params);
     }
-    return updated;
-  }
 
-  async softDelete(id: string): Promise<TaskDocument> {
-    const deleted = await this.taskRepository.softDelete(id);
-    if (!deleted) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
+    async findActiveTasks(): Promise<TaskDocument[]> {
+        return this.taskRepository.findActiveTasks();
     }
-    return deleted;
-  }
+
+    async create(data: Partial<Task>): Promise<TaskDocument> {
+        const task = await this.taskRepository.create(data);
+        this.taskHelper.scheduleTask(task);
+        return task;
+    }
+
+    async update(id: string, data: Partial<Task>): Promise<TaskDocument> {
+        const updated = await this.taskRepository.update(id, data);
+        if (!updated) {
+            throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        this.taskHelper.scheduleTask(updated);
+        return updated;
+    }
+
+    async softDelete(id: string): Promise<TaskDocument> {
+        const deleted = await this.taskRepository.softDelete(id);
+        if (!deleted) {
+            throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+        return deleted;
+    }
 }
