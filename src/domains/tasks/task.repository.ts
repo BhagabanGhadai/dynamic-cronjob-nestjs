@@ -3,12 +3,13 @@ import { Task, TaskDocument } from './task.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter, ProjectionType, QueryOptions } from 'mongoose';
 import { ECurrentStatus } from './task.interface';
+import { UpdateTaskDto } from './task.schema';
 
 @Injectable()
 export class TaskRepository {
   constructor(
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
-  ) {}
+  ) { }
 
   async findById(id: string): Promise<TaskDocument | null> {
     return this.taskModel.findById(id).exec();
@@ -56,8 +57,8 @@ export class TaskRepository {
     return task.save();
   }
 
-  async update(id: string, data: Partial<Task>): Promise<TaskDocument | null> {
-    return this.taskModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  async update(data: Partial<UpdateTaskDto>): Promise<TaskDocument | null> {
+    return this.taskModel.findByIdAndUpdate(data._id, data, { new: true }).exec();
   }
 
   async softDelete(id: string): Promise<TaskDocument | null> {

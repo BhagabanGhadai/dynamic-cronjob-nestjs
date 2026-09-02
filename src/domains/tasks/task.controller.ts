@@ -5,14 +5,20 @@ import {
     Body,
     Param,
     Delete,
-    Put,
     Query,
     UsePipes,
+    Patch,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { Task, TaskDocument } from './task.entity';
+import type { TaskDocument } from './task.entity';
 import { ZodValidationPipe } from 'src/core/pipes/validation.pipe';
-import * as taskSchema from './task.schema';
+import {
+    createTaskSchema,
+    updateTaskSchema,
+    idSchema,
+    type CreateTaskDto,
+    type UpdateTaskDto,
+} from './task.schema';
 
 @Controller('tasks')
 export class TaskController {
@@ -27,27 +33,29 @@ export class TaskController {
         return this.taskService.findAll({ page, limit, search });
     }
 
-    @Get(':id')
-    async findById(@Param('id') id: string): Promise<TaskDocument> {
-        return this.taskService.findById(id);
+    @Get(':_id')
+    @UsePipes(new ZodValidationPipe(idSchema))
+    async findById(@Param('_id') _id: string): Promise<TaskDocument> {
+        return this.taskService.findById(_id);
     }
 
     @Post()
-    @UsePipes(new ZodValidationPipe<taskSchema.CreateTaskDto>(taskSchema.createTaskSchema))
-    async create(@Body() task: taskSchema.CreateTaskDto): Promise<TaskDocument> {
+    @UsePipes(new ZodValidationPipe<CreateTaskDto>(createTaskSchema))
+    async create(@Body() task: CreateTaskDto): Promise<TaskDocument> {
         return this.taskService.create(task);
     }
 
-    @Put(':id')
+    @Patch()
+    @UsePipes(new ZodValidationPipe<UpdateTaskDto>(updateTaskSchema))
     async update(
-        @Param('id') id: string,
-        @Body() task: Task,
+        @Body() task: UpdateTaskDto,
     ): Promise<TaskDocument> {
-        return this.taskService.update(id, task);
+        return this.taskService.update(task);
     }
 
-    @Delete(':id')
-    async delete(@Param('id') id: string): Promise<TaskDocument> {
-        return this.taskService.softDelete(id);
+    @Delete(':_id')
+    @UsePipes(new ZodValidationPipe(idSchema))
+    async delete(@Param('_id') _id: string): Promise<TaskDocument> {
+        return this.taskService.softDelete(_id);
     }
 }

@@ -2,13 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { Task, TaskDocument } from './task.entity';
 import { TaskHelper } from './task.helper';
+import { UpdateTaskDto } from './task.schema';
 
 @Injectable()
 export class TaskService {
   constructor(
     private readonly taskRepository: TaskRepository,
     private taskHelper: TaskHelper,
-  ) {}
+  ) { }
 
   async findById(id: string): Promise<TaskDocument> {
     const task = await this.taskRepository.findById(id);
@@ -34,10 +35,10 @@ export class TaskService {
     return task;
   }
 
-  async update(id: string, data: Partial<Task>): Promise<TaskDocument> {
-    const updated = await this.taskRepository.update(id, data);
+  async update(data: UpdateTaskDto): Promise<TaskDocument> {
+    const updated = await this.taskRepository.update(data);
     if (!updated) {
-      throw new NotFoundException(`Task with ID "${id}" not found`);
+      throw new NotFoundException(`Task with ID "${data._id}" not found`);
     }
     this.taskHelper.scheduleTask(updated);
     return updated;
