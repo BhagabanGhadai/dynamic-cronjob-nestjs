@@ -1,5 +1,4 @@
 import { HttpException, Injectable, HttpStatus, Logger } from '@nestjs/common';
-import { TaskRepository } from './task.repository';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TaskDocument } from './task.entity';
 import { ECurrentStatus, ETaskType } from './task.interface';
@@ -10,7 +9,6 @@ export class TaskHelper {
     private readonly logger = new Logger(TaskHelper.name);
 
     constructor(
-        private readonly taskRepository: TaskRepository,
         private readonly schedulerRegistry: SchedulerRegistry,
     ) { }
     scheduleTask(task: TaskDocument) {
@@ -59,7 +57,7 @@ export class TaskHelper {
         const newJob = new CronJob(
             task.cronExpression,
             () => {
-                console.log('Cron job started');
+                console.log('Cron job started', task.message);
             },
             null,
             true,
