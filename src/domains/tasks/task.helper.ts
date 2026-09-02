@@ -72,7 +72,7 @@ export class TaskHelper {
 
     startIntervalJob(task: TaskDocument) {
         const interval = setInterval(() => {
-            this.logger.log(task.task);
+            this.logger.log(task.message);
         }, task.intervalInMs);
         this.schedulerRegistry.addInterval(task.name, interval);
         return;
@@ -80,7 +80,7 @@ export class TaskHelper {
 
     startTimeoutJob(task: TaskDocument) {
         const timeout = setTimeout(() => {
-            this.logger.log(task.task);
+            this.logger.log(task.message);
         }, task.timeoutInMs);
         this.schedulerRegistry.addTimeout(task.name, timeout);
         return;
