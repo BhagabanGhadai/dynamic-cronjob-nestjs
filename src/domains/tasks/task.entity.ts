@@ -27,7 +27,7 @@ export class Task {
     @Prop({ type: Number })
     timeoutInMs: number;
 
-    @Prop({ type: String })
+    @Prop({ type: String, required: true })
     message: string;
 
     @Prop({ type: String, enum: ECurrentStatus, default: ECurrentStatus.active })

@@ -2,11 +2,20 @@ import { HttpException, Injectable, HttpStatus, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TaskDocument } from './task.entity';
 import { ECurrentStatus, ETaskType } from './task.interface';
-import { CronJob } from 'cron';
+import { CronJob, CronTime } from 'cron';
 
 @Injectable()
 export class TaskHelper {
     private readonly logger = new Logger(TaskHelper.name);
+
+    static isCronExpression(cronExpression: string): boolean {
+        try {
+            new CronTime(cronExpression);
+            return true;
+        } catch {
+            return false;
+        }
+    }
 
     constructor(
         private readonly schedulerRegistry: SchedulerRegistry,

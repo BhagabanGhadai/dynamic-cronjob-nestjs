@@ -1,14 +1,35 @@
-import * as v from 'valibot';
-import { ECurrentStatus, ETaskType } from './task.interface';
+import * as z from 'zod';
+import { ECurrentStatus, ETaskType, ETimeZone } from './task.interface';
 import { TaskHelper } from './task.helper';
 
-export const createTaskSchema = v.object({
-    name: v.string(),
-    description: v.string(),
-    type: v.union([v.literal(ETaskType.cron), v.literal(ETaskType.cron)]),
-    schedule: v.union([
-        v.string()
-    ]),
-    message: v.string(),
-    status: v.optional(v.literal(ECurrentStatus.active)),
-})
+const baseTaskSchema = z.object({
+    name: z.string().min(3, "Name must be at least 3 characters long"),
+    message: z.string().min(1, "Message is required"),
+    status: z.optional(z.literal(ECurrentStatus.active)),
+});
+
+const cronTaskSchema = baseTaskSchema.extend({
+    taskType: z.literal(ETaskType.cron),
+    cronExpression: z.string().refine((val) => TaskHelper.isCronExpression(val), {
+        message: "Invalid cron expression",
+    }),
+    timeZone: z.nativeEnum(ETimeZone).optional(),
+});
+
+const intervalTaskSchema = baseTaskSchema.extend({
+    taskType: z.literal(ETaskType.interval),
+    intervalInMs: z.number({ message: "intervalInMs is required and must be a number" }).positive("intervalInMs must be a positive number"),
+});
+
+const timeoutTaskSchema = baseTaskSchema.extend({
+    taskType: z.literal(ETaskType.timeout),
+    timeoutInMs: z.number({ message: "timeoutInMs is required and must be a number" }).positive("timeoutInMs must be a positive number"),
+});
+
+export const createTaskSchema = z.discriminatedUnion('taskType', [
+    cronTaskSchema,
+    intervalTaskSchema,
+    timeoutTaskSchema,
+]);
+
+export type CreateTaskDto = z.infer<typeof createTaskSchema>;
