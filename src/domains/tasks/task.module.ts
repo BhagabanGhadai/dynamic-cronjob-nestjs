@@ -7,11 +7,11 @@ import { TaskService } from './task.service';
 import { TaskHelper } from './task.helper';
 
 @Module({
-    imports: [
-        MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
-    ],
-    controllers: [TaskController],
-    providers: [TaskService, TaskRepository, TaskHelper],
-    exports: [TaskService, TaskRepository],
+  imports: [
+    MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
+  ],
+  controllers: [TaskController],
+  providers: [TaskService, TaskRepository, TaskHelper],
+  exports: [TaskService, TaskRepository],
 })
-export class TaskModule { }
+export class TaskModule {}

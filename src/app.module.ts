@@ -9,4 +9,4 @@ import { CronModule } from './crons';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
